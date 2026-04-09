@@ -1,31 +1,30 @@
 #!/bin/bash
 
-# --- S24 Custom Image Gen: Termux Setup Script ---
+# --- S24 Custom Image Gen: Termux Setup (V2 - High Compatibility) ---
 echo "--- Starting S24 Termux Setup (Optimized for 8GB RAM) ---"
 
-# 1. Update and Upgrade Packages
-echo "[1/4] Updating Termux packages..."
+# 1. Update and Enable TUR (Termux User Repository)
+# This is crucial for pre-built PyTorch/AI libs on Android
+echo "[1/4] Setting up Termux repositories..."
 pkg update -y && pkg upgrade -y
+pkg install -y tur-repo
 
-# 2. Install Python & Essential Build Tools
-echo "[2/4] Installing Python and build dependencies..."
+# 2. Install Python & Optimized System AI Libs
+# We use 'python-pytorch' from TUR because building from source on S24 is too slow/buggy
+echo "[2/4] Installing Python and optimized AI libraries..."
 pkg install -y python python-pip libjpeg-turbo libpng libwebp freetype libffi openssl build-essential clang rust cmake ninja git wget binutils ndk-sysroot
+pkg install -y python-numpy python-pillow python-pytorch python-torchvision
 
-# 3. Create & Activate Virtual Environment
-echo "[3/4] Setting up Python environment..."
-python -m venv venv
-source venv/bin_activate
-
-# 4. Install AI Libraries (CPU optimized for Mobile)
-echo "[4/4] Installing AI libraries (this may take a few minutes)..."
-pip install --upgrade pip
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-pip install diffusers transformers accelerate gradio pillow numpy
+# 3. Handle remaining dependencies via Pip
+# We use --system because virtualenvs can be tricky with TUR system packages
+echo "[3/4] Installing remaining dependencies..."
+pip install diffusers transformers accelerate gradio --break-system-packages
 
 # --- Final Check ---
 if [ $? -eq 0 ]; then
     echo "--- Setup Complete! ---"
     echo "To start the app, run: bash start.sh"
 else
-    echo "--- Setup Failed! Check the error logs above. ---"
+    echo "--- Setup Failed! ---"
+    echo "Tip: If it failed on 'pip', try running it again."
 fi
